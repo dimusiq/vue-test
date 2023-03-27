@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Vue тестовое задание</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <style>
+      @font-face {
+        font-family: 'Gotham Pro';
+        font-style: normal;
+        font-weight: 400;
+        src: local('Gotham Pro'),
+          url('/fonts/gothampro.woff2') format('woff2');
+      }
+      .wrapper {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-column-gap: 30px;
+        grid-row-gap: 30px;
+        width: 100%;
+        margin: 0 auto;
+        justify-items: center;
+        align-items: stretch;
+        background-color: #353638;
+        font-family: 'Gotham Pro', 'Arial', sans-serif;
+      }
+      /* 768px */
+      @media screen and (max-width: 768px) {
+        .wrapper {
+          grid-template-columns: repeat(2, 1fr);
+          grid-column-gap: 20px;
+          grid-row-gap: 20px;
+        }
+      }
+      /* 320px */
+      @media screen and (max-width: 320px) {
+        .wrapper {
+          grid-template-columns: repeat(1, 1fr);
+          grid-column-gap: 10px;
+          grid-row-gap: 10px;
+        }
+        .stopwatch-container {
+          width: 100%;
+          height: auto;
+          margin: 10px;
+        }
+      }
+
+      .stopwatch-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+        background-color: #696969;
+        margin: 20px;
+        padding: 20px;
+        width: 225px;
+        height: 120px;
+      }
+
+      .stopwatch-container:active {
+        color: #9e9e9e;
+      }
+      .stopwatch-time {
+        font-style: normal;
+        font-weight: 400;
+        font-size: 22px;
+        line-height: 21px;
+        text-align: center;
+        color: #ffffff;
+      }
+      .stopwatch-time-gray {
+        color: #9e9e9e;
+      }
+      .line {
+        border: 1px solid #ffffff;
+        width: 90%;
+      }
+      .line-gray {
+        border: 1px solid #9e9e9e;
+        width: 90%;
+      }
+      .stopwatch-buttons,
+      .stopwatch-buttons-gray {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        width: 100%;
+      }
+      .stopwatch-buttons-gray i {
+        color: #9e9e9e;
+      }
+
+      .stopwatch-button {
+        background-color: inherit;
+        color: #ffffff;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+      }
+      .stopwatch-button:active {
+        transform: translateY(4px);
+        color: #9e9e9e;
+      }
+
+      .add-stopwatch {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #696969;
+        margin: 20px;
+        padding: 20px;
+        width: 225px;
+        height: 120px;
+      }
+      .add-stopwatch i {
+        height: 20px;
+        width: 20px;
+      }
+      .add-stopwatch-button {
+        background-color: inherit;
+        color: #fff;
+        border: none;
+        height: 20px;
+        width: 20px;
+        cursor: pointer;
+      }
+      .add-stopwatch-button-gray {
+        color: #9e9e9e;
+      }
+      .add-stopwatch-button:active {
+        box-shadow: 0 5px #9e9e9e;
+        transform: translateY(4px);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="wrapper">
+        <div
+          v-for="(stopwatch, index) in stopwatches"
+          :key="index"
+          class="stopwatch-container"
+        >
+          <div
+            v-bind:class="stopwatch.isRunning ? 'stopwatch-time' : 'stopwatch-time-gray'"
+          >
+            {{ formatTime(stopwatch.time) }}
+          </div>
+          <hr
+            v-bind:class="stopwatch.isRunning ? 'line' : 'line-gray'"
+          />
+          <div
+            v-bind:class="stopwatch.isRunning ? 'stopwatch-buttons' : 'stopwatch-buttons-gray'"
+          >
+            <button
+              class="stopwatch-button"
+              @click="toggleStopwatch(index)"
+            >
+              <i
+                v-bind:class="stopwatch.isRunning ? 'fas fa-pause' : 'fas fa-play'"
+              ></i>
+            </button>
+            <button
+              class="stopwatch-button"
+              @click="resetStopwatch(index)"
+            >
+              <i class="fas fa-stop"></i>
+            </button>
+          </div>
+        </div>
+        <div class="add-stopwatch">
+          <button
+            class="add-stopwatch-button"
+            @click="addStopwatch"
+          >
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+      const app = Vue.createApp({
+        data() {
+          return {
+            stopwatches: [{ time: 0, isRunning: false }],
+            timerInterval: null,
+          };
+        },
+        methods: {
+          toggleStopwatch(index) {
+            const stopwatch = this.stopwatches[index];
+            if (stopwatch.isRunning) {
+              clearInterval(stopwatch.intervalId);
+            } else {
+              stopwatch.intervalId = setInterval(() => {
+                stopwatch.time += 10;
+              }, 10);
+            }
+            stopwatch.isRunning = !stopwatch.isRunning;
+          },
+          resetStopwatch(index) {
+            const stopwatch = this.stopwatches[index];
+
+            if (!stopwatch.isRunning) {
+              stopwatch.time = 0;
+            }
+          },
+
+          formatTime(time) {
+            const date = new Date(time);
+            const hours = date
+              .getUTCHours()
+              .toString()
+              .padStart(2, '0');
+            const minutes = date
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0');
+            const seconds = date
+              .getUTCSeconds()
+              .toString()
+              .padStart(2, '0');
+
+            return `${hours}:${minutes}:${seconds}`;
+          },
+          addStopwatch() {
+            this.stopwatches.push({
+              time: 0,
+              isRunning: false,
+            });
+          },
+        },
+      });
+      app.mount('#app');
+    </script>
+  </body>
+</html>
